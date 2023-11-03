@@ -102,35 +102,86 @@ def poll_results():
 #@cross_origin
 def get_results(event_id,share):
 
-
-
     #what do i need to return to react:
     #questiondates and question times, amount of answers for each(), who voted for what.
     # we having a page the admin and page the voters.  the page for the admin needs qds and qts, 
     #could be nice to have per person {questiondate, questionname, answers:{personA:answer}, {personB:answer}}
     #get all questions with eventID = blank. then get all answers to each question and get the corresponfing person 
-    answers_dict = {}
     question_dict = {}
+    allquestion_dict = {}
+    event_dict = {}
     count = 0
+    count_all = 0
+    count_event = 0
+    if share == "True":
+        newshare= True
+    else:
+        newshare= False
     questions = db.session.execute(db.select(Questions.questiondate, Questions.questiontime, PollAnswers.answer, PollAnswers.invitees_id).where(and_((Questions.event_id == event_id), Questions.id == PollAnswers.questions_id))).all()
     for question in questions:
         row_dict = []
-        
-        if share == True:
-            inviteename = db.session.execute(db.select(Invitees.inviteename).where(Invitees.id == question[3])).first()
-            row_dict = [question[0], question[1], question[2], inviteename[0]]
-        else:
-            row_dict = [question[0], question[1]]
+        inviteename = db.session.execute(db.select(Invitees.inviteename).where(Invitees.id == question[3])).first()
+        row_dict = [question[0], question[1], question[2], inviteename[0]]
         question_dict[count] = row_dict
         count += 1
-    if share == True:
-        print(answers_dict)    
-        return((answers_dict))
-    else:
-        print(question_dict)    
-        return((question_dict))  
 
+    allquestions = db.session.execute(db.select(Questions.questiondate, Questions.questiontime).where((Questions.event_id == event_id))).all()
+    for all_question in allquestions:
+        row_dict2 = [all_question[0], all_question[1]]
+        allquestion_dict[count_all] = row_dict2
+        count_all += 1
+
+    eventinfo = db.session.execute(db.select(Event.creatorname, Event.creatoremail, Event.eventname, Event.shareresults, Event.polldescription).where((Event.id == event_id))).all()
+    for event_item in eventinfo:
+        row_dict3 = [event_item[0], event_item[1], event_item[2], event_item[3], event_item[4]]
+        event_dict[count_event]= row_dict3
+        count_event += 1
+
+    q_a_merge = {}
+    prevdate = ""
+    if newshare == True:
+        for q in allquestion_dict:
+
+            answers = {}
+            count_a_merge = 0
+            q_date = allquestion_dict[q][0]
+        
+            if prevdate != q_date:
+                q_a_merge[q_date]={}
+            q_time = allquestion_dict[q][1]
+            for a in question_dict:
+                if (q_date == question_dict[a][0]) and (q_time ==  question_dict[a][1]):
+                    answers[count_a_merge]= [question_dict[a][2], question_dict[a][3]]
+                count_a_merge += 1    
+            q_a_merge[q_date][q_time] = answers
+            prevdate = q_date
+            print('here')
+    else:
+        for q in allquestion_dict:
+            print(q)
+            q_date = allquestion_dict[q][0]
+            q_time = allquestion_dict[q][1]
+            print(q_time)
+            print(prevdate)
+            if prevdate !=q_date:
+                time_list = []
+            time_list.append(q_time)
+            q_a_merge[q_date]= time_list
+            print(q_a_merge)
+            prevdate = q_date
+
+    complete_dict = {
+        "event": event_dict,
+        "questions": q_a_merge
+    }
     
+
+    print((complete_dict))
+    return((complete_dict))
+
+#change to questions dict no matter what, newshare instead of share and the if share statement, allquestions section
+#need to add event as well 
+#we need the votes so that we can populate the bar and the circles and the number on the side. we need the event for the top section.  We need the questions and answers to populate the rest of the bottom section.  Only 
    
 
 # Get user info from token
