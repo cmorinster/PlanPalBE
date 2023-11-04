@@ -27,7 +27,6 @@ from sqlalchemy import desc
 
 # Create an event
 @api.route('/event', methods=['POST'])
-@cross_origin
 def create_event():
     data = request.json
     # Validate the data
@@ -74,7 +73,6 @@ def create_event():
     return jsonify(new_event_dict)
 
 @api.route('/pollresults', methods=['POST'])
-@cross_origin
 def poll_results():
     data = request.json
     # data = {invitees:{inviteename:, inviteeemail:, eventid:}, pollanswers:{question1{questions_id:, answer:, invitees_id}, question2 {questionsid:,  answer:, invitees_id}
@@ -99,7 +97,6 @@ def poll_results():
 
 
 @api.route('/getresults/<int:event_id>/<string:share>')
-@cross_origin
 def get_results(event_id,share):
 
     #what do i need to return to react:
