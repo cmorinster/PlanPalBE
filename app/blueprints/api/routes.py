@@ -27,7 +27,7 @@ from sqlalchemy import desc
 
 # Create an event
 @api.route('/event', methods=['POST'])
-#@cross_origin
+@cross_origin
 def create_event():
     data = request.json
     # Validate the data
@@ -74,7 +74,7 @@ def create_event():
     return jsonify(new_event_dict)
 
 @api.route('/pollresults', methods=['POST'])
-#@cross_origin
+@cross_origin
 def poll_results():
     data = request.json
     # data = {invitees:{inviteename:, inviteeemail:, eventid:}, pollanswers:{question1{questions_id:, answer:, invitees_id}, question2 {questionsid:,  answer:, invitees_id}
@@ -99,7 +99,7 @@ def poll_results():
 
 
 @api.route('/getresults/<int:event_id>/<string:share>')
-#@cross_origin
+@cross_origin
 def get_results(event_id,share):
 
     #what do i need to return to react:
@@ -183,113 +183,3 @@ def get_results(event_id,share):
 #need to add event as well 
 #we need the votes so that we can populate the bar and the circles and the number on the side. we need the event for the top section.  We need the questions and answers to populate the rest of the bottom section.  Only 
    
-
-# Get user info from token
-# @api.route('/me')
-# # @cross_origin
-# @token_auth.login_required
-# def me():
-#     return token_auth.current_user().to_dict()
-
-   
-
-
-
-# # Get all invitees
-# @api.route('/characters1')
-# def get_characters():
-#     characters = Characters.query.all()
-#     return jsonify([c.to_dict() for c in characters])
-
-
-# # Get a single character with id
-# @api.route('/characters/<int:character_id>')
-# def get_character(character_id):
-#     character = Characters.query.get_or_404(character_id)
-#     linkstat = requests.get(character.link).status_code
-#     print(linkstat)
-#     if linkstat > 209:
-#         response1 = openai.Image.create(
-#         prompt= character.description,
-#         n=1,
-#         size="1024x1024"
-#         )
-#         champ_char = (character.to_dict())
-#         print(champ_char)
-#         print("hellO")
-#         print(type(champ_char))
-#         champ_char['link'] = response1['data'][0]['url']
-#         print('here')
-#         character1 = Characters.query.get_or_404(character.id)
-#         character1.update(champ_char)
-#         return jsonify(character.to_dict())
-#     else:
-#         print("hi")
-#         return jsonify(character.to_dict())
-    
-
-
-# # Update a single character with id
-# @api.route('/characters/<int:character_id>', methods=['PUT'])
-# def update_character(character_id):
-#     character = Characters.query.get_or_404(character_id)
-#     data = request.json
-#     character.update(data)
-#     return jsonify(character.to_dict())
-
-
-
-# @api.route('/hof')
-# def get_hof():
-#     results = db.session.execute(db.select(Characters).order_by(Characters.wins.desc()).limit(10))
-#     counter = 1
-#     char_dict = {}
-#     for chars in results:
-#         for thing in chars:
-#             char_dict.update({counter:thing.to_dict()})
-#             counter += 1 
-#     return jsonify(char_dict)
-
-
-
-# # Get champion
-# @api.route('/champ')
-# def get_champ():
-#     results = db.session.execute(db.select(Characters).where(Characters.champion == True)).scalars().all()
-#     for chars in results:
-#             if chars.champion == True:
-#                 print (type(chars))
-#                 champ = chars
-#                 break
-#     linkstat = requests.get(champ.link).status_code
-#     print(linkstat)
-#     if linkstat > 209:
-#         response1 = openai.Image.create(
-#         prompt= champ.description,
-#         n=1,
-#         size="1024x1024"
-#         )
-#         champ_char = (champ.to_dict())
-#         print(champ_char)
-#         print("hellO")
-#         print(type(champ_char))
-#         champ_char['link'] = response1['data'][0]['url']
-#         print('here')
-#         character = Characters.query.get_or_404(champ.id)
-#         character.update(champ_char)
-#         return jsonify(character.to_dict())
-#     else:
-#         print("hi")
-#         return jsonify(champ.to_dict())
-
-
-# # Delete a single character with id
-# @api.route('/characters/<int:character_id>', methods=['DELETE'])
-# @token_auth.login_required
-# def delete_character(character_id):
-#     character = Characters.query.get_or_404(character_id)
-#     user = token_auth.current_user()
-#     if user.id != character.user_id:
-#         return jsonify({'error': 'You are not allowed to edit this character'}), 403
-#     character.delete()
-#     return jsonify({'success': f'{character.title} has been deleted'})
