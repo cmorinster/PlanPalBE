@@ -136,21 +136,40 @@ def get_results(event_id,share):
 
     q_a_merge = {}
     prevdate = ""
+    highestday_length = 0
+    highestoverall_length = 0
+    highesttime_length = 0
+    highest_day = {}
+    highest_overall = {}
     if newshare == True:
         for q in allquestion_dict:
 
             answers = {}
             count_a_merge = 0
             q_date = allquestion_dict[q][0]
-        
+            q_time = allquestion_dict[q][1]
+            
+                #largest: day: {time: time, day_length: day_length, answers: answers}
             if prevdate != q_date:
                 q_a_merge[q_date]={}
-            q_time = allquestion_dict[q][1]
+                highestday_length = 0
+                highest_day[q_date] = {
+                    "daylength": 0
+                }
+            highesttime_length = 0
             for a in question_dict:
                 if (q_date == question_dict[a][0]) and (q_time ==  question_dict[a][1]):
                     answers[count_a_merge]= [question_dict[a][2], question_dict[a][3]]
+                    highesttime_length += 1
                 count_a_merge += 1    
             q_a_merge[q_date][q_time] = answers
+            if highesttime_length > highestday_length:
+                highestday_length = highesttime_length
+                highest_day[q_date] = {
+                    "time":q_time,
+                    "daylength": highestday_length,
+                    "answers": answers
+                }
             prevdate = q_date
             print('here')
     else:
@@ -167,9 +186,14 @@ def get_results(event_id,share):
             print(q_a_merge)
             prevdate = q_date
 
+
+
+
+
     complete_dict = {
         "event": event_dict,
-        "questions": q_a_merge
+        "questions": q_a_merge,
+        "largest": highest_day
     }
     
 
