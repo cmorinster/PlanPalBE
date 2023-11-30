@@ -72,24 +72,33 @@ def create_event():
     
     return jsonify(new_event_dict)
 
-@api.route('/pollresults', methods=['POST'])
-def poll_results():
+@api.route('/pollresults/<int:event_id>', methods=['POST'])
+def poll_results(event_id):
     data = request.json
+    # data = {inviteename: , inviteeemail: , attendeepicks{0:{},1:{},2:{}}}
     # data = {invitees:{inviteename:, inviteeemail:, eventid:}, pollanswers:{question1{questions_id:, answer:, invitees_id}, question2 {questionsid:,  answer:, invitees_id}
-    for field in ['inviteename', 'inviteeemail', 'event_id']:
-        if field not in data['invitees']:
+    for field in ['inviteename', 'inviteeemail']:
+        if field not in data:
             return jsonify({'error': f"You are missing the {field} field"}), 400
-    new_invitee = Invitees(**data['invitees'])
+    data_invitee = {'inviteename':data['inviteename'], 'inviteeemail':data['inviteeemail'], 'event_id':event_id }
+    new_invitee = Invitees(**data_invitee)
     new_invitee_dict = new_invitee.to_dict()
     count = 0
-    for answer in data['pollanswers']:
-        for fielda in ['answer', 'questions_id']:
-            if fielda not in data['pollanswers'][answer]:
-                return jsonify({'error': f"You are missing the {fielda} field"}), 400
-        count += 1
-        data['pollanswers'][answer]['invitees_id'] = new_invitee_dict['id']
-        new_answer = PollAnswers(**data['pollanswers'][answer])
-    
+
+   
+    for answer in data['attendeepicks']:
+        
+        question_id = db.session.execute(db.select(Questions.id).where(and_((Questions.event_id == event_id), Questions.questiondate == data['attendeepicks'][answer]['questionDate'], Questions.questiontime == data['attendeepicks'][answer]['questionTime']))).all()
+        data_answer = {'answer':data['attendeepicks'][answer]['questionAnswer'], 'questions_id': question_id[0][0], 'invitees_id': new_invitee_dict['id'] }
+        # for fielda in ['answer', 'questions_id']:
+        #     if fielda not in data['pollanswers'][answer]:
+        #         return jsonify({'error': f"You are missing the {fielda} field"}), 400
+        #get question id usings question date and time and event id.  grab invitee_id
+        print(data_answer['answer'])
+        print(data_answer['invitees_id'])
+        print(data_answer['questions_id'])
+        new_answer = PollAnswers(**data_answer)
+
     return "hello"
 
 
@@ -113,7 +122,8 @@ def get_results(event_id,share):
     if share == "True":
         newshare= True
     else:
-        newshare= False
+        newshare=False
+
     questions = db.session.execute(db.select(Questions.questiondate, Questions.questiontime, PollAnswers.answer, PollAnswers.invitees_id).where(and_((Questions.event_id == event_id), Questions.id == PollAnswers.questions_id))).all()
     for question in questions:
         row_dict = []
@@ -133,6 +143,10 @@ def get_results(event_id,share):
         row_dict3 = [event_item[0], event_item[1], event_item[2], event_item[3], event_item[4]]
         event_dict[count_event]= row_dict3
         count_event += 1
+        if newshare == False:
+            if event_item[3] == True:
+                newshare = True
+                        
 
     q_a_merge = {}
     prevdate = ""
@@ -204,3 +218,4 @@ def get_results(event_id,share):
 #need to add event as well 
 #we need the votes so that we can populate the bar and the circles and the number on the side. we need the event for the top section.  We need the questions and answers to populate the rest of the bottom section.  Only 
    
+ 
